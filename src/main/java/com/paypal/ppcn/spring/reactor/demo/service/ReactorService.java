@@ -14,7 +14,7 @@ public class ReactorService {
     @Autowired
     private ReactorWebClient webClient;
 
-    public String blockData(){
+    public String blockData() {
         Mono<String> resp = getValue();
         return resp.block();
     }
@@ -22,7 +22,8 @@ public class ReactorService {
     public Mono<String> getValue() {
         Mono<String> monoString = getMono();
         monoString.doOnNext(val -> {
-            System.out.println("doOnNext value:" + val);
+            //这段代码是不生效的
+            System.out.println("getValue doOnNext:" + val);
         });
         return monoString;
     }
@@ -30,6 +31,7 @@ public class ReactorService {
 
     public Mono<String> getMono() {
         Mono mono = Mono.defer(() -> webClient.get())
+                .doOnNext(res -> System.out.println("ReactorService中显示:" + res))
                 .repeatWhen(Repeat.times(5L).fixedBackoff(Duration.ofSeconds(2)))
                 .takeUntil(resp -> resp.getBody().contains("202"))
                 .filter(resp -> resp.getBody().contains("202"))
@@ -40,7 +42,7 @@ public class ReactorService {
         return mono;
     }
 
-    public void setValue( String value) {
+    public void setValue(String value) {
         System.out.println("subscribe result" + value);
     }
 
